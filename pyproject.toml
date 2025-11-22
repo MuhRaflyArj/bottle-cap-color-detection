@@ -41,7 +41,7 @@ maintainers = [
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
-    "Intended Audience :: Education",
+    "Intended Audience :: Education",d
     "Intended Audience :: Science/Research",
     "License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)",
     "Programming Language :: Python :: 3",
@@ -74,6 +74,7 @@ dependencies = [
     "psutil>=5.8.0", # system utilization
     "polars>=0.20.0",
     "ultralytics-thop>=2.0.18", # FLOPs computation https://github.com/ultralytics/thop
+    "python-dotenv==0.9.9", # Added python-dotenv (imports as dotenv)
 ]
 
 # Optional dependencies ------------------------------------------------------------------------------------------------
@@ -88,6 +89,7 @@ dev = [
     "mkdocstrings[python]",
     "mkdocs-ultralytics-plugin>=0.1.29", # for meta descriptions and images, dates and authors
     "mkdocs-macros-plugin>=1.0.5", # duplicating content (i.e. export tables) in multiple places
+    "roboflow==1.2.11", # Added roboflow
 ]
 export = [
     "numpy<2.0.0", # TF 2.20 compatibility
