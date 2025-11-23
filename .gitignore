@@ -192,3 +192,12 @@ calibration_*.npy
 *.heic
 *.ico
 *.raw
+
+# Ignore project folders
+bottle_cap_project/
+
+# Not ignore images in assets
+!assets/*.jpg
+!assets/*.jpeg
+!assets/*.png
+
