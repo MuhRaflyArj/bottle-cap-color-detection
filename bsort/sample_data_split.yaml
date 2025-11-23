@@ -1,0 +1,23 @@
+others:
+  train:
+    - raw-250110_dc_s001_b3_2.jpg
+    - raw-250110_dc_s001_b2_1.jpg
+    - raw-250110_dc_s001_b2_3.jpg
+    - raw-250110_dc_s001_b2_15.jpg
+  valid:
+    - raw-250110_dc_s001_b3_3.jpg
+    - raw-250110_dc_s001_b3_4.jpg
+
+light_blue:
+  train:
+    - raw-250110_dc_s001_b4_3.jpg
+    - raw-250110_dc_s001_b4_1.jpg
+  valid:
+    - raw-250110_dc_s001_b4_2.jpg
+
+dark_blue:
+  train:
+    - raw-250110_dc_s001_b5_2.jpg
+    - raw-250110_dc_s001_b5_3.jpg
+  valid:
+    - raw-250110_dc_s001_b5_5.jpg
