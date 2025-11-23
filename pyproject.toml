@@ -75,6 +75,7 @@ dependencies = [
     "polars>=0.20.0",
     "ultralytics-thop>=2.0.18", # FLOPs computation https://github.com/ultralytics/thop
     "python-dotenv==0.9.9", # Added python-dotenv (imports as dotenv)
+    "gdown==5.2.0",
 ]
 
 # Optional dependencies ------------------------------------------------------------------------------------------------
