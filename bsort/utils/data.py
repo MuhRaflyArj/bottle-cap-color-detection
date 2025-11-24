@@ -19,39 +19,49 @@ logger = logging.getLogger(__name__)
 
 def get_dataset(config: Dict) -> str:
     """
-    Downloads the dataset. IF the dataset folder exists, IT IS DELETED first.
+    Downloads the dataset and returns the absolute path to the first found .yaml file.
     
     Args:
         config (Dict): The configuration dictionary.
     
     Returns:
-        str: The absolute path to the 'data.yaml' file.
+        str: The absolute path to the yaml configuration file.
     """
     dataset_name = config.get("dataset_name", "dataset")
-    yaml_filename = config.get("yaml_path", "data.yaml")
     source = config.get("source", "").lower()
     
-    # Resolve paths
-    root_path = config.get("datasets_dir", "datasets")
-    datasets_root = Path(root_path)
+    # 1. Resolve Paths
+    root_conf = config.get("datasets_dir", "datasets")
+    
+    if Path(root_conf).is_absolute():
+        datasets_root = Path(root_conf)
+    else:
+        datasets_root = (Path.cwd() / root_conf).resolve()
+        
     target_dir = datasets_root / dataset_name
 
-    # 1. If folder exists, delete it to make room for new data
+    # 2. FORCE CLEAN: If folder exists, delete it
     if target_dir.exists():
         logger.info(f"Removing existing dataset at: {target_dir}")
         shutil.rmtree(target_dir)
 
-    # 2. Create fresh directory and Download
-    logger.info(f"Downloading fresh dataset from source: {source}...")
-    target_dir.mkdir(parents=True, exist_ok=True)
+    # 3. Download
+    logger.info(f"Downloading dataset to: {target_dir}")
+    actual_data_dir = target_dir
 
     try:
         if source == "roboflow":
-            download_from_roboflow(config.get("roboflow", {}), target_dir)
+            actual_path_str = download_from_roboflow(config.get("roboflow", {}), target_dir)
+            actual_data_dir = Path(actual_path_str).resolve()
+        
         elif source == "gdrive":
+            target_dir.mkdir(parents=True, exist_ok=True)
             download_from_gdrive(config.get("gdrive", {}), target_dir)
+            
         elif source == "url":
+            target_dir.mkdir(parents=True, exist_ok=True)
             download_from_url(config.get("url", {}), target_dir)
+            
         else:
             raise ValueError(f"Unknown source: '{source}'")
 
@@ -59,24 +69,18 @@ def get_dataset(config: Dict) -> str:
         logger.error(f"Download failed: {e}")
         raise e
 
-    # 3. Locate YAML (Handle nested folders from unzipping)
-    found = list(target_dir.rglob("*.yaml"))
+    # 4. Locate YAML (Simplified)
+    logger.info(f"Searching for configuration in: {actual_data_dir}")
     
-    # Filter for likely candidates (data.yaml or dataset.yaml)
-    candidates = [f for f in found if f.name in ["data.yaml", "dataset.yaml"]]
+    # Find ALL yaml files recursively
+    found_yamls = list(actual_data_dir.rglob("*.yaml"))
     
-    if candidates:
-        yaml_file = candidates[0]
-        logger.info(f"Located config file at: {yaml_file}")
-    elif found:
-        yaml_file = found[0]
-        logger.warning(f"Using fallback config file: {yaml_file}")
-    else:
-        files_present = [f.name for f in list(target_dir.rglob("*"))[:10]]
-        raise FileNotFoundError(
-            f"'{yaml_filename}' not found in {target_dir}. \n"
-            f"Files found: {files_present}"
-        )
+    if not found_yamls:
+        raise FileNotFoundError(f"No .yaml configuration found in {actual_data_dir}")
+
+    # Simply take the first one found
+    yaml_file = found_yamls[0]
+    logger.info(f"Located config file at: {yaml_file}")
 
     return str(yaml_file.resolve())
 
@@ -92,8 +96,9 @@ def download_from_roboflow(rf_config: Dict, target_dir: Path) -> None:
     rf = Roboflow(api_key=api_key)
     project = rf.workspace(rf_config["workspace"]).project(rf_config["project"])
     version = project.version(rf_config["version"])
+    dataset = version.download("yolov11", location=str(target_dir))
     
-    version.download("yolov11", location=str(target_dir))
+    return dataset.location
 
 
 def download_from_gdrive(gd_config: Dict, target_dir: Path) -> None:
