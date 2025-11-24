@@ -1,5 +1,5 @@
 from typing import Dict, Optional, Any
-import wandb
+import wandb # pylint: disable=import-error
 from ultralytics.utils.metrics import DetMetrics
 
 

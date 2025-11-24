@@ -1,8 +1,9 @@
 import shutil
 import zipfile
-import yaml
 from pathlib import Path
 from typing import List, Union, Dict
+
+import yaml
 
 
 def extract_and_prepare_dataset(
@@ -20,11 +21,11 @@ def extract_and_prepare_dataset(
     # 1. Load Split Configuration
     current_dir = Path(__file__).resolve().parent
     split_config_path = current_dir.parent / "sample_data_split.yaml"
-    
+
     if not split_config_path.exists():
         raise FileNotFoundError(f"Split config not found at {split_config_path}")
 
-    with open(split_config_path, 'r') as f:
+    with open(split_config_path, 'r', encoding='utf-8') as f:
         split_config = yaml.safe_load(f)
 
     # 2. Define Paths
@@ -92,7 +93,7 @@ def _determine_class_id(filename: str, config: Dict) -> int:
         return 2
     if is_in("others"):
         return 0
-    
+
     return 0
 
 
@@ -101,7 +102,7 @@ def _process_split(files: List[Path], target_dir: Path, config: Dict) -> None:
     for img_path in files:
         filename = img_path.name
         label_path = img_path.with_suffix(".txt")
-        
+
         # Pass config to determine ID
         new_class_id = _determine_class_id(filename, config)
 
@@ -117,7 +118,7 @@ def _process_split(files: List[Path], target_dir: Path, config: Dict) -> None:
                     if len(parts) >= 5:
                         parts[0] = str(new_class_id)
                         new_lines.append(" ".join(parts))
-            
+
             with open(target_dir / "labels" / label_path.name, 'w', encoding='utf-8') as f:
                 f.write("\n".join(new_lines))
 

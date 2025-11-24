@@ -1,8 +1,9 @@
-import yaml
 import gc
-import wandb
+
+import yaml
+import wandb # pylint: disable=import-error
 from ultralytics import YOLO
-from bsort.utils import get_dataset, log_metrics_to_wandb
+from bsort.utils import get_dataset, log_metrics_to_wandb # pylint: disable=import-error
 
 def train_model(config_path: str) -> None:
     """
@@ -12,7 +13,7 @@ def train_model(config_path: str) -> None:
         config_path (str): Path to the settings.yaml file.
     """
     # 1. Load Configuration
-    with open(config_path, 'r') as f:
+    with open(config_path, 'r', encoding='utf-8') as f:
         config = yaml.safe_load(f)
 
     project_conf = config.get("project", {})
@@ -24,7 +25,7 @@ def train_model(config_path: str) -> None:
     # 2. Prepare Data
     print(f"Preparing dataset from source: {data_conf.get('source')}...")
     data_yaml_path = get_dataset(data_conf)
-    
+
     # 3. Initialize WandB (if enabled)
     run = None
     if wandb_conf.get("enabled", False):
@@ -32,16 +33,15 @@ def train_model(config_path: str) -> None:
             project=project_conf.get("project_name", "bsort_project"),
             name=project_conf.get("run_name", "experiment"),
             config=config,
-            # entity=wandb_conf.get("entity") # Optional
         )
 
     try:
         # 4. Initialize Model
         model_name = model_conf.get("name", "yolo11n.pt")
         task = model_conf.get("task", "detect")
-        
+
         print(f"Initializing model: {model_name} (Task: {task})")
-        
+
         # Load model (supports both .pt and custom .yaml like yolo11p.yaml)
         model = YOLO(model_name, task=task)
 
@@ -58,15 +58,15 @@ def train_model(config_path: str) -> None:
         if run:
             print("Logging final metrics to WandB...")
             log_metrics_to_wandb(
-                results, 
-                run_id=run.id, 
+                results,
+                run_id=run.id,
                 project_name=project_conf.get("project_name")
             )
 
     except Exception as e:
         print(f"Training failed: {e}")
         raise e
-        
+
     finally:
         # 7. Cleanup to free GPU memory
         if 'model' in locals():
