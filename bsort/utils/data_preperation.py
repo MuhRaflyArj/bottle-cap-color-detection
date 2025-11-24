@@ -1,16 +1,15 @@
+from __future__ import annotations
+
 import shutil
 import zipfile
-import yaml
 from pathlib import Path
-from typing import List, Union, Dict
+
+import yaml
 
 
-def extract_and_prepare_dataset(
-    zip_path: Union[str, Path],
-    root_dir: Union[str, Path] = "datasets"
-) -> Path:
+def extract_and_prepare_dataset(zip_path: str | Path, root_dir: str | Path = "datasets") -> Path:
     """Extracts the dataset zip and organizes it into a raw/processed structure.
-    
+
     Returns:
         Path: The path to the generated data.yaml file.
     """
@@ -20,11 +19,11 @@ def extract_and_prepare_dataset(
     # 1. Load Split Configuration
     current_dir = Path(__file__).resolve().parent
     split_config_path = current_dir.parent / "sample_data_split.yaml"
-    
+
     if not split_config_path.exists():
         raise FileNotFoundError(f"Split config not found at {split_config_path}")
 
-    with open(split_config_path, 'r') as f:
+    with open(split_config_path) as f:
         split_config = yaml.safe_load(f)
 
     # 2. Define Paths
@@ -38,7 +37,7 @@ def extract_and_prepare_dataset(
 
     # 3. Extract Zip
     print(f"Extracting {zip_file} to {raw_dir}...")
-    with zipfile.ZipFile(zip_file, 'r') as zip_ref:
+    with zipfile.ZipFile(zip_file, "r") as zip_ref:
         zip_ref.extractall(raw_dir)
 
     # 4. Create Processed Directory Structure
@@ -52,14 +51,12 @@ def extract_and_prepare_dataset(
     if not source_files:
         raise FileNotFoundError("No images found in the extracted zip file.")
 
-    train_files: List[Path] = []
-    valid_files: List[Path] = []
+    train_files: list[Path] = []
+    valid_files: list[Path] = []
 
     # Flatten the validation lists for quick lookup
     valid_filenames = (
-        split_config["others"]["valid"] +
-        split_config["light_blue"]["valid"] +
-        split_config["dark_blue"]["valid"]
+        split_config["others"]["valid"] + split_config["light_blue"]["valid"] + split_config["dark_blue"]["valid"]
     )
 
     # Sort files into Train or Valid
@@ -80,8 +77,9 @@ def extract_and_prepare_dataset(
     return yaml_path
 
 
-def _determine_class_id(filename: str, config: Dict) -> int:
+def _determine_class_id(filename: str, config: dict) -> int:
     """Determines the class ID based on the filename and loaded config."""
+
     # Helper to check if file is in train or valid list for a key
     def is_in(key):
         return filename in (config[key]["train"] + config[key]["valid"])
@@ -92,16 +90,16 @@ def _determine_class_id(filename: str, config: Dict) -> int:
         return 2
     if is_in("others"):
         return 0
-    
+
     return 0
 
 
-def _process_split(files: List[Path], target_dir: Path, config: Dict) -> None:
+def _process_split(files: list[Path], target_dir: Path, config: dict) -> None:
     """Moves images and updates labels for a specific data split."""
     for img_path in files:
         filename = img_path.name
         label_path = img_path.with_suffix(".txt")
-        
+
         # Pass config to determine ID
         new_class_id = _determine_class_id(filename, config)
 
@@ -110,15 +108,15 @@ def _process_split(files: List[Path], target_dir: Path, config: Dict) -> None:
         # Process Label
         if label_path.exists():
             new_lines = []
-            with open(label_path, 'r', encoding='utf-8') as f:
+            with open(label_path, encoding="utf-8") as f:
                 lines = f.readlines()
                 for line in lines:
                     parts = line.strip().split()
                     if len(parts) >= 5:
                         parts[0] = str(new_class_id)
                         new_lines.append(" ".join(parts))
-            
-            with open(target_dir / "labels" / label_path.name, 'w', encoding='utf-8') as f:
+
+            with open(target_dir / "labels" / label_path.name, "w", encoding="utf-8") as f:
                 f.write("\n".join(new_lines))
 
 
@@ -129,15 +127,11 @@ def _create_yaml_config(base_path: Path) -> Path:
         "train": "train/images",
         "val": "valid/images",
         "test": "valid/images",
-        "names": {
-            0: "others",
-            1: "light_blue",
-            2: "dark_blue"
-        }
+        "names": {0: "others", 1: "light_blue", 2: "dark_blue"},
     }
 
     yaml_path = base_path / "config.yaml"
-    with open(yaml_path, 'w', encoding='utf-8') as f:
+    with open(yaml_path, "w", encoding="utf-8") as f:
         yaml.dump(config, f, sort_keys=False)
 
     return yaml_path

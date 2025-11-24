@@ -3,41 +3,39 @@ Data Management Utilities for bsort (CLI).
 Handles generic dataset downloading and path sanitization.
 """
 
+import logging
 import os
 import shutil
 import zipfile
-import logging
-import requests
-import yaml
 from pathlib import Path
-from typing import Dict, Union
-from roboflow import Roboflow
+
 import gdown
+import requests
+from roboflow import Roboflow
 
 logger = logging.getLogger(__name__)
 
 
-def get_dataset(config: Dict) -> str:
-    """
-    Downloads the dataset and returns the absolute path to the first found .yaml file.
-    
+def get_dataset(config: dict) -> str:
+    """Downloads the dataset and returns the absolute path to the first found .yaml file.
+
     Args:
         config (Dict): The configuration dictionary.
-    
+
     Returns:
         str: The absolute path to the yaml configuration file.
     """
     dataset_name = config.get("dataset_name", "dataset")
     source = config.get("source", "").lower()
-    
+
     # 1. Resolve Paths
     root_conf = config.get("datasets_dir", "datasets")
-    
+
     if Path(root_conf).is_absolute():
         datasets_root = Path(root_conf)
     else:
         datasets_root = (Path.cwd() / root_conf).resolve()
-        
+
     target_dir = datasets_root / dataset_name
 
     # 2. FORCE CLEAN: If folder exists, delete it
@@ -53,15 +51,15 @@ def get_dataset(config: Dict) -> str:
         if source == "roboflow":
             actual_path_str = download_from_roboflow(config.get("roboflow", {}), target_dir)
             actual_data_dir = Path(actual_path_str).resolve()
-        
+
         elif source == "gdrive":
             target_dir.mkdir(parents=True, exist_ok=True)
             download_from_gdrive(config.get("gdrive", {}), target_dir)
-            
+
         elif source == "url":
             target_dir.mkdir(parents=True, exist_ok=True)
             download_from_url(config.get("url", {}), target_dir)
-            
+
         else:
             raise ValueError(f"Unknown source: '{source}'")
 
@@ -71,10 +69,10 @@ def get_dataset(config: Dict) -> str:
 
     # 4. Locate YAML (Simplified)
     logger.info(f"Searching for configuration in: {actual_data_dir}")
-    
+
     # Find ALL yaml files recursively
     found_yamls = list(actual_data_dir.rglob("*.yaml"))
-    
+
     if not found_yamls:
         raise FileNotFoundError(f"No .yaml configuration found in {actual_data_dir}")
 
@@ -85,10 +83,10 @@ def get_dataset(config: Dict) -> str:
     return str(yaml_file.resolve())
 
 
-def download_from_roboflow(rf_config: Dict, target_dir: Path) -> None:
+def download_from_roboflow(rf_config: dict, target_dir: Path) -> None:
     if Roboflow is None:
         raise ImportError("pip install roboflow")
-    
+
     api_key = os.getenv("ROBOFLOW_API_KEY")
     if not api_key:
         raise ValueError("ROBOFLOW_API_KEY not set.")
@@ -97,32 +95,32 @@ def download_from_roboflow(rf_config: Dict, target_dir: Path) -> None:
     project = rf.workspace(rf_config["workspace"]).project(rf_config["project"])
     version = project.version(rf_config["version"])
     dataset = version.download("yolov11", location=str(target_dir))
-    
+
     return dataset.location
 
 
-def download_from_gdrive(gd_config: Dict, target_dir: Path) -> None:
+def download_from_gdrive(gd_config: dict, target_dir: Path) -> None:
     if gdown is None:
         raise ImportError("pip install gdown")
-    
+
     file_id = gd_config["file_id"]
     output_zip = target_dir / "temp.zip"
-    
+
     gdown.download(id=file_id, output=str(output_zip), quiet=False)
-    
+
     _extract_zip(output_zip, target_dir)
 
 
-def download_from_url(url_config: Dict, target_dir: Path) -> None:
+def download_from_url(url_config: dict, target_dir: Path) -> None:
     response = requests.get(url_config["link"], stream=True)
     output_zip = target_dir / "temp.zip"
-    with open(output_zip, 'wb') as f:
+    with open(output_zip, "wb") as f:
         for chunk in response.iter_content(chunk_size=8192):
             f.write(chunk)
     _extract_zip(output_zip, target_dir)
 
 
 def _extract_zip(zip_path: Path, target_dir: Path) -> None:
-    with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+    with zipfile.ZipFile(zip_path, "r") as zip_ref:
         zip_ref.extractall(target_dir)
     zip_path.unlink()
