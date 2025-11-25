@@ -1,17 +1,17 @@
 # settings.yaml
 
 project:
-  project_name: "cli_test"     # WandB Project Name / Output Folder Name
-  run_name: "roboflow_train"   # Specific Run Name
+  project_name: "cli_test" # WandB Project Name / Output Folder Name
+  run_name: "roboflow_train" # Specific Run Name
   output_dir: "./runs"
 
 # data:
 #   # Source Selection
 #   source: "roboflow"
-  
+
 #   # Directory name where data will be extracted inside ./datasets/
 #   dataset_name: "bottle_cap_public"
-  
+
 #   # Name of the config file inside the downloaded folder
 #   yaml_path: "data.yaml"
 
@@ -30,7 +30,7 @@ data:
 
 model:
   # Architecture definition
-  name: "yolo11p.yaml" 
+  name: "yolo11p.yaml"
   task: "detect"
 
 wandb:
@@ -40,20 +40,20 @@ wandb:
 # These match the 'model_p_pretrain.train()' arguments from your snippet
 training:
   epochs: 5
-  batch: 16             # Standard default, adjust if GPU runs OOM
+  batch: 16 # Standard default, adjust if GPU runs OOM
   imgsz: 640
-  device: 'cpu'             # Use 0 for GPU, 'cpu' for CPU
+  device: "cpu" # Use 0 for GPU, 'cpu' for CPU
   verbose: true
-  
+
   # Optimizer Settings
   optimizer: "SGD"
   lr0: 0.02
   weight_decay: 0.01
-  
+
   # Augmentation Overrides (from your snippet)
-  hsv_h: 0.0            # Hue augmentation
-  hsv_s: 0.25           # Saturation augmentation
-  hsv_v: 0.0            # Value (Brightness) augmentation
-  mixup: 0.0            # Mixup augmentation
-  fliplr: 0.5           # Flip Left-Right probability
-  mosaic: 0.0           # Mosaic augmentation (Disabled)
+  hsv_h: 0.0 # Hue augmentation
+  hsv_s: 0.25 # Saturation augmentation
+  hsv_v: 0.0 # Value (Brightness) augmentation
+  mixup: 0.0 # Mixup augmentation
+  fliplr: 0.5 # Flip Left-Right probability
+  mosaic: 0.0 # Mosaic augmentation (Disabled)

@@ -1674,7 +1674,7 @@ def yaml_model_load(path):
         new_stem = re.sub(r"(\d+)([nsmlx])6(.+)?$", r"\1\2-p6\3", path.stem)
         LOGGER.warning(f"Ultralytics YOLO P6 models now use -p6 suffix. Renaming {path.stem} to {new_stem}.")
         path = path.with_name(new_stem + path.suffix)
-        
+
     unified_path = re.sub(r"(\d+)([nslmxp])(.+)?$", r"\1\3", str(path))  # i.e. yolov8x.yaml -> yolov8.yaml
     yaml_file = check_yaml(unified_path, hard=False) or check_yaml(path)
     d = YAML.load(yaml_file)  # model dict

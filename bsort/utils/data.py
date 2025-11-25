@@ -1,24 +1,22 @@
+import logging
 import os
 import shutil
 import zipfile
-import logging
 from pathlib import Path
-from typing import Dict
 
-import requests
-from roboflow import Roboflow # pylint: disable=import-error
 import gdown
+import requests
+from roboflow import Roboflow  # pylint: disable=import-error
 
 logger = logging.getLogger(__name__)
 
 
-def get_dataset(config: Dict) -> str:
-    """
-    Downloads the dataset and returns the absolute path to the first found .yaml file.
-    
+def get_dataset(config: dict) -> str:
+    """Downloads the dataset and returns the absolute path to the first found .yaml file.
+
     Args:
         config (Dict): The configuration dictionary.
-    
+
     Returns:
         str: The absolute path to the yaml configuration file.
     """
@@ -80,12 +78,11 @@ def get_dataset(config: Dict) -> str:
     return str(yaml_file.resolve())
 
 
-def download_from_roboflow(rf_config: Dict, target_dir: Path) -> None:
+def download_from_roboflow(rf_config: dict, target_dir: Path) -> None:
     """Downloads a dataset from Roboflow and returns the dataset location path.
 
     Args:
-        rf_config (Dict): Configuration dictionary containing Roboflow workspace,
-            project, and version details.
+        rf_config (Dict): Configuration dictionary containing Roboflow workspace, project, and version details.
         target_dir (Path): Directory path where the dataset will be downloaded.
 
     Returns:
@@ -110,7 +107,7 @@ def download_from_roboflow(rf_config: Dict, target_dir: Path) -> None:
     return dataset.location
 
 
-def download_from_gdrive(gd_config: Dict, target_dir: Path) -> None:
+def download_from_gdrive(gd_config: dict, target_dir: Path) -> None:
     """Downloads a dataset from Google Drive using gdown and extracts it.
 
     Args:
@@ -131,7 +128,7 @@ def download_from_gdrive(gd_config: Dict, target_dir: Path) -> None:
     _extract_zip(output_zip, target_dir)
 
 
-def download_from_url(url_config: Dict, target_dir: Path) -> None:
+def download_from_url(url_config: dict, target_dir: Path) -> None:
     """Downloads a dataset from a URL and extracts the ZIP file.
 
     Args:
@@ -140,7 +137,7 @@ def download_from_url(url_config: Dict, target_dir: Path) -> None:
     """
     response = requests.get(url_config["link"], stream=True, timeout=15)
     output_zip = target_dir / "temp.zip"
-    with open(output_zip, 'wb') as f:
+    with open(output_zip, "wb") as f:
         for chunk in response.iter_content(chunk_size=8192):
             f.write(chunk)
     _extract_zip(output_zip, target_dir)
@@ -153,6 +150,6 @@ def _extract_zip(zip_path: Path, target_dir: Path) -> None:
         zip_path (Path): Path to the ZIP file to extract.
         target_dir (Path): Directory path where the contents will be extracted.
     """
-    with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+    with zipfile.ZipFile(zip_path, "r") as zip_ref:
         zip_ref.extractall(target_dir)
     zip_path.unlink()

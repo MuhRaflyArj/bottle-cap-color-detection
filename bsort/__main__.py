@@ -1,5 +1,5 @@
-import os
 from dotenv import load_dotenv
+
 from bsort.cli import main
 
 load_dotenv()
