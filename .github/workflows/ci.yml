@@ -64,7 +64,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: ./Dockerfile-bsort
+          file: ./docker/Dockerfile-bsort
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/bsort:latest
           cache-from: type=gha
