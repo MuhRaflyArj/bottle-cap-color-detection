@@ -1,0 +1,33 @@
+# settings_infer.yaml
+
+project:
+  output_dir: "./runs"
+  output_name: "inference_demo_run" # The folder name where results will be stored
+
+inference:
+  # WandB Settings for Model Retrieval
+  wandb:
+    entity: "<wandb entity name>"
+    project: "<wandb project name>"
+    train_run_name: "finetune_yolo11p" 
+    
+    # Model version alias (e.g., 'v0', 'latest', 'best')
+    version: "v0"
+
+  # Input Data Source
+  source:
+    # Options: "url", "local", "gcs"
+    type: "gcs" 
+    location: "<your input source here>"
+
+  # Ultralytics Prediction Arguments
+  model_args:
+    conf: 0.25         # Confidence threshold
+    iou: 0.45          # NMS IoU threshold
+    device: "cpu"      # "cpu" or "0"
+    imgsz: 640
+    max_det: 300
+    save: true         # Save annotated images
+    save_txt: true     # Save labels to txt
+    save_conf: true    # Include confidence in txt
+    classes: null      # Filter by class, e.g., [0, 1]
