@@ -1,35 +1,97 @@
-# Python
+# Version Control
+.git
+.gitignore
+
+# Python & Build
 __pycache__
-*.pyc
-*.pyo
-*.pyd
-.Python
 *.py[cod]
 *$py.class
-.pytest_cache
-.coverage
-coverage.xml
-.ruff_cache
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
 *.egg-info
-dist
-build
+.installed.cfg
+*.egg
+MANIFEST
 
-# Development
-.env
-.venv
-env/
-venv/
-ENV/
+# Dependencies
+node_modules/
+
+# IDE Settings
 .idea
 .vscode
 *.swp
 *.swo
 .DS_Store
+.spyderproject
+.spyproject
+.ropeproject
 
-# Project specific
+# Logs & Profiling
 *.log
 benchmarks.log
-runs/
+pip-log.txt
+*.pclprof
 
-# Dependencies
-node_modules/
+# Testing & Quality
+.tox/
+.nox/
+.coverage
+coverage.xml
+htmlcov/
+.pytest_cache
+.mypy_cache/
+.ruff_cache
+
+# Documentation
+docs/_build/
+site/
+
+# Jupyter
+.ipynb_checkpoints
+
+# Artifacts
+runs/
+wandb/
+mlruns/
+datasets/
+
+# Neural Network Weights
+weights/
+*.pt
+*.ts
+*.pb
+*.onnx
+*.engine
+*.mlmodel
+*.tflite
+*.h5
+*_saved_model/
+*_web_model/
+*.rknn
+
+# Media Files
+*.mp4
+*.avi
+*.mov
+*.mkv
+*.webm
+# Exclude images
+*.jpg
+*.jpeg
+*.png
+*.bmp
+*.raw
+
+!assets/
