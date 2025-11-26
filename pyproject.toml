@@ -165,6 +165,14 @@ omit = ["ultralytics/utils/callbacks/*"]
 line_length = 120
 multi_line_output = 0
 
+[tool.pylint]
+disable = [
+    "logging-fstring-interpolation",  # W1203
+    "import-error",                   # E0401
+    "missing-module-docstring",       # C0114
+    "too-many-locals",                # R0914
+]
+
 [tool.yapf]
 based_on_style = "pep8"
 spaces_before_comment = 2
