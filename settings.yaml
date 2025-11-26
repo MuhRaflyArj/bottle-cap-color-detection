@@ -10,23 +10,23 @@ project:
 #   source: "roboflow"
   
 #   # Directory name where data will be extracted inside ./datasets/
-#   dataset_name: "bottle_cap_public"
+#   dataset_name: "<dataset folder"
   
 #   # Name of the config file inside the downloaded folder
 #   yaml_path: "data.yaml"
 
 #   # Roboflow Config
 #   roboflow:
-#     workspace: "work3-dqzz5"
-#     project: "bottle-cap-y6pzg"
+#     workspace: "<public roboflow workspace id>"
+#     project: "<public roboflow project id>"
 #     version: 1
 
 data:
   source: "url"
-  dataset_name: "bottle_cap_public"
+  dataset_name: "<dataset folder>"  # Folder name inside ./datasets/
   yaml_path: "config.yaml"
   url:
-    link: "gcs link here"
+    link: "<dataset download link>"
 
 model:
   # Architecture definition
@@ -37,12 +37,11 @@ wandb:
   enabled: true
 
 # Training Hyperparameters
-# These match the 'model_p_pretrain.train()' arguments from your snippet
 training:
   epochs: 5
-  batch: 16             # Standard default, adjust if GPU runs OOM
+  batch: 16
   imgsz: 640
-  device: 'cpu'             # Use 0 for GPU, 'cpu' for CPU
+  device: 'cpu' # Use 0 for GPU, 'cpu' for CPU
   verbose: true
   
   # Optimizer Settings
