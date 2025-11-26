@@ -1,0 +1,33 @@
+FROM python:3.11-slim
+
+# Prevent Python from writing pyc files to disc
+ENV PYTHONDONTWRITEBYTECODE=1
+# Prevent Python from buffering stdout and stderr
+ENV PYTHONUNBUFFERED=1
+
+# Install system dependencies required for OpenCV
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libgl1 \
+    libglib2.0-0 \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+
+COPY ultralytics/ ultralytics/
+COPY bsort/ bsort/
+COPY pyproject.toml .
+
+# Copy config files
+COPY settings.yaml .
+COPY infer-settings.yaml .
+COPY .env .
+
+# Install Dependencies
+RUN pip install --upgrade pip && \
+    pip install -e ".[dev,logging]"
+
+ENV PYTHONPATH="/app"
+
+ENTRYPOINT ["python", "-m", "bsort"]
