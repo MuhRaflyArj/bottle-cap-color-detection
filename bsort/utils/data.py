@@ -1,13 +1,14 @@
 import os
 import shutil
-import zipfile
 import logging
 from pathlib import Path
 from typing import Dict
-
 import requests
+
 from roboflow import Roboflow # pylint: disable=import-error
 import gdown
+
+from .file_ops import extract_zip
 
 logger = logging.getLogger(__name__)
 
@@ -128,7 +129,7 @@ def download_from_gdrive(gd_config: Dict, target_dir: Path) -> None:
 
     gdown.download(id=file_id, output=str(output_zip), quiet=False)
 
-    _extract_zip(output_zip, target_dir)
+    extract_zip(output_zip, target_dir)
 
 
 def download_from_url(url_config: Dict, target_dir: Path) -> None:
@@ -143,16 +144,4 @@ def download_from_url(url_config: Dict, target_dir: Path) -> None:
     with open(output_zip, 'wb') as f:
         for chunk in response.iter_content(chunk_size=8192):
             f.write(chunk)
-    _extract_zip(output_zip, target_dir)
-
-
-def _extract_zip(zip_path: Path, target_dir: Path) -> None:
-    """Extracts a ZIP file to the specified directory and removes the ZIP file.
-
-    Args:
-        zip_path (Path): Path to the ZIP file to extract.
-        target_dir (Path): Directory path where the contents will be extracted.
-    """
-    with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-        zip_ref.extractall(target_dir)
-    zip_path.unlink()
+    extract_zip(output_zip, target_dir)

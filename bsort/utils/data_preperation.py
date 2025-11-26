@@ -1,10 +1,10 @@
 import shutil
-import zipfile
 from pathlib import Path
 from typing import List, Union, Dict
 
 import yaml
 
+from .file_ops import extract_zip
 
 def extract_and_prepare_dataset(
     zip_path: Union[str, Path],
@@ -38,9 +38,7 @@ def extract_and_prepare_dataset(
         shutil.rmtree(processed_dir)
 
     # 3. Extract Zip
-    print(f"Extracting {zip_file} to {raw_dir}...")
-    with zipfile.ZipFile(zip_file, 'r') as zip_ref:
-        zip_ref.extractall(raw_dir)
+    extract_zip(zip_file, raw_dir)
 
     # 4. Create Processed Directory Structure
     for split in ["train", "valid"]:
@@ -82,7 +80,16 @@ def extract_and_prepare_dataset(
 
 
 def _determine_class_id(filename: str, config: Dict) -> int:
-    """Determines the class ID based on the filename and loaded config."""
+    """Determines the class ID based on the filename and loaded config.
+
+    Args:
+        filename (str): The name of the image file (e.g., 'image_01.jpg').
+        config (Dict): The split configuration dictionary containing class lists.
+
+    Returns:
+        int: The corresponding class ID (0, 1, or 2). Returns 0 if not found.
+    """
+
     # Helper to check if file is in train or valid list for a key
     def is_in(key):
         return filename in (config[key]["train"] + config[key]["valid"])
@@ -98,7 +105,14 @@ def _determine_class_id(filename: str, config: Dict) -> int:
 
 
 def _process_split(files: List[Path], target_dir: Path, config: Dict) -> None:
-    """Moves images and updates labels for a specific data split."""
+    """Moves images and updates labels for a specific data split.
+
+    Args:
+        files (List[Path]): A list of file paths to process.
+        target_dir (Path): The destination directory for images and labels.
+        config (Dict): The split configuration dictionary used for class mapping.
+    """
+
     for img_path in files:
         filename = img_path.name
         label_path = img_path.with_suffix(".txt")
@@ -124,12 +138,20 @@ def _process_split(files: List[Path], target_dir: Path, config: Dict) -> None:
 
 
 def _create_yaml_config(base_path: Path) -> Path:
-    """Generates the YOLO config.yaml file."""
+    """Generates the YOLO config.yaml file.
+
+    Args:
+        base_path (Path): The root path of the processed dataset where the 
+            yaml file will be created.
+
+    Returns:
+        Path: The file path to the generated 'config.yaml'.
+    """
+
     config = {
-        "path": str(base_path.resolve()),
-        "train": "train/images",
-        "val": "valid/images",
-        "test": "valid/images",
+        "train": "../train/images",
+        "val": "../valid/images",
+        "test": "../valid/images",
         "names": {
             0: "others",
             1: "light_blue",
