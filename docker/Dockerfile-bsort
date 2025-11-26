@@ -24,6 +24,8 @@ COPY train-settings.yaml .
 COPY infer-settings.yaml .
 COPY .env .
 
+RUN pip install --no-cache-dir torch torchvision --index-url https://download.pytorch.org/whl/cpu
+
 # Install Dependencies
 RUN pip install --upgrade pip && \
     pip install -e ".[dev,logging]"
