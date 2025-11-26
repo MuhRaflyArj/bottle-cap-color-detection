@@ -20,7 +20,7 @@ COPY bsort/ bsort/
 COPY pyproject.toml .
 
 # Copy config files
-COPY settings.yaml .
+COPY train-settings.yaml .
 COPY infer-settings.yaml .
 COPY .env .
 
