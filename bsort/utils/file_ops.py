@@ -4,7 +4,7 @@ from typing import Dict, Any
 
 import yaml
 
-def extract_zip(zip_path: Path, target_dir: Path) -> None:
+def extract_zip(zip_path: Path, target_dir: Path, unlink: bool = True) -> None:
     """Extracts a ZIP file to the specified directory and removes the ZIP file.
 
     Args:
@@ -13,7 +13,9 @@ def extract_zip(zip_path: Path, target_dir: Path) -> None:
     """
     with zipfile.ZipFile(zip_path, 'r') as zip_ref:
         zip_ref.extractall(target_dir)
-    zip_path.unlink()
+
+    if unlink:
+        zip_path.unlink()
 
 def load_yaml_config(config_path: str) -> Dict[str, Any]:
     """Loads a YAML configuration file from the given path.

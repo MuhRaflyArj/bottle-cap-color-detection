@@ -65,35 +65,43 @@ def infer_model(config_path: str) -> None:
 
 def _download_model_from_wandb(wandb_conf: dict) -> str:
     """
-    Locates the correct Run ID based on the human-readable Run Name,
-    downloads the artifact, and returns the path to the .pt file.
+    Downloads the model artifact from WandB.
+    
+    Supports two formats:
+    1. 'pt' (Standard): Resolves Run ID and downloads 'run_{id}_model'.
+    2. 'tensorrt' (Custom): Downloads '{train_run_name}_tensorrt'.
     """
     entity = wandb_conf.get("entity")
     project = wandb_conf.get("project")
     target_name = wandb_conf.get("train_run_name")
     version = wandb_conf.get("version", "latest")
 
+    model_format = wandb_conf.get("model_format", "pt").lower()
+
     if not all([entity, project, target_name]):
         raise ValueError("Inference config missing WandB entity, project, or train_run_name.")
 
-    logger.info(f"Searching WandB for Run Name: '{target_name}' in {entity}/{project}...")
-
     api = wandb.Api()
+    artifact_path = ""
 
-    # Filter runs by the 'display_name'
-    runs = api.runs(f"{entity}/{project}", filters={"display_name": target_name})
+    if model_format in ("tensorrt", "engine"):
+        artifact_name = f"{target_name}_tensorrt:{version}"
+        artifact_path = f"{entity}/{project}/{artifact_name}"
+        logger.info(f"Targeting TensorRT artifact: {artifact_path}")
 
-    if len(runs) == 0:
-        raise ValueError(f"No run found with name '{target_name}'.")
+    else:
+        logger.info(f"Searching WandB for Run Name: '{target_name}' in {entity}/{project}...")
+        runs = api.runs(f"{entity}/{project}", filters={"display_name": target_name})
 
-    # Get the most recent run if duplicates exist
-    target_run = runs[0]
-    run_id = target_run.id
-    logger.info(f"Resolved Run Name '{target_name}' to Run ID: '{run_id}'")
+        if len(runs) == 0:
+            raise ValueError(f"No run found with name '{target_name}'. Check your spelling.")
 
-    # Construct the standard Ultralytics artifact name format
-    artifact_name = f"run_{run_id}_model:{version}"
-    artifact_path = f"{entity}/{project}/{artifact_name}"
+        target_run = runs[0]
+        run_id = target_run.id
+        logger.info(f"Resolved Run Name '{target_name}' to Run ID: '{run_id}'")
+
+        artifact_name = f"run_{run_id}_model:{version}"
+        artifact_path = f"{entity}/{project}/{artifact_name}"
 
     logger.info(f"Downloading artifact: {artifact_path}")
 
@@ -101,15 +109,20 @@ def _download_model_from_wandb(wandb_conf: dict) -> str:
         artifact = api.artifact(artifact_path, type='model')
         artifact_dir = artifact.download()
 
-        # Find the .pt file inside the downloaded directory
-        model_files = list(Path(artifact_dir).rglob("*.pt"))
+        ext_pattern = "*.engine" if (model_format == "tensorrt") else "*.pt"
+
+        model_files = list(Path(artifact_dir).rglob(ext_pattern))
+
         if not model_files:
-            raise FileNotFoundError("Artifact downloaded but no .pt file found.")
+            all_files = list(Path(artifact_dir).iterdir())
+            if all_files:
+                return str(all_files[0])
+            raise FileNotFoundError(f"Artifact downloaded but no {ext_pattern} file found.")
 
         return str(model_files[0])
 
     except Exception as e:
-        logger.error(f"Failed to download artifact. Error: {e}")
+        logger.error(f"Failed to download artifact: {e}")
         raise e
 
 

@@ -38,7 +38,7 @@ def extract_and_prepare_dataset(
         shutil.rmtree(processed_dir)
 
     # 3. Extract Zip
-    extract_zip(zip_file, raw_dir)
+    extract_zip(zip_file, raw_dir, unlink=False)
 
     # 4. Create Processed Directory Structure
     for split in ["train", "valid"]:

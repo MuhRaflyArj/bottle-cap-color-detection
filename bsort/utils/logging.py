@@ -1,5 +1,10 @@
 from typing import Dict, Optional, Any
-import wandb # pylint: disable=import-error
+from pathlib import Path
+import gc
+
+from torch.cuda import is_available
+import wandb
+from ultralytics import YOLO
 from ultralytics.utils.metrics import DetMetrics
 
 
@@ -64,3 +69,47 @@ def log_metrics_to_wandb(results: Any, run_id: str, project_name: str) -> None:
 
     except wandb.Error as e:
         print(f"Failed to resume run {run_id}: {e}")
+
+
+def export_and_log_tensorrt(run_id: str, project_name: str, run_name: str) -> None:
+    """
+    Exports the best model to TensorRT and logs the artifact to the active WandB run.
+    
+    Args:
+        run_id (str): The unique ID of the WandB run to attach to.
+        project_name (str): The local project directory name (where weights are saved).
+        run_name (str): The specific run name (folder name).
+    """
+    # Locate the best weights
+    weights_path = Path(project_name) / run_name / "weights" / "best.pt"
+
+    if not weights_path.exists():
+        print(f"Skipping export: Weights not found at {weights_path}")
+        return
+
+    try:
+        if is_available():
+            with wandb.init(id=run_id, project=project_name, resume="must") as run:
+                model = YOLO(weights_path)
+
+                exported_path_str = model.export(format="engine", device=0, half=True)
+                exported_path = Path(exported_path_str)
+
+                artifact_name = f"{run_name}_tensorrt"
+                trt_artifact = wandb.Artifact(
+                    name=artifact_name,
+                    type="model",
+                    description=f"TensorRT FP16 Engine for {run_name}"
+                )
+                trt_artifact.add_file(str(exported_path))
+
+                run.log_artifact(trt_artifact)
+                print(f"Successfully logged {artifact_name} to run {run_id}")
+
+                del model
+                gc.collect()
+        else:
+            print("CUDA is not available. Skipping TensorRT export.")
+
+    except Exception as e: # pylint: disable=broad-exception-caught
+        print(f"Failed to export/log TensorRT: {e}")

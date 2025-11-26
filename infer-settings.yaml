@@ -7,24 +7,29 @@ project:
 inference:
   # WandB Settings for Model Retrieval
   wandb:
-    entity: "<wandb entity name>"
-    project: "<wandb project name>"
-    train_run_name: "finetune_yolo11p" 
+    entity: "<wandb-entity-name>" # Your WandB entity/username
+    project: "<wandb-project-name>"      # The project name used in training
+    
+    # The human-readable run name you used during 'bsort train'
+    # The code will resolve this to the random hash (e.g., 'run_8egxqn5h')
+    train_run_name: "<your-train-run-name>" 
     
     # Model version alias (e.g., 'v0', 'latest', 'best')
+    model_format: "pt" # 'pt' or 'tensorrt' 
     version: "v0"
 
   # Input Data Source
   source:
     # Options: "url", "local", "gcs"
-    type: "gcs" 
-    location: "<your input source here>"
+    type: "url" 
+    # The path or link to the image/video
+    location: "https://example.com/sample_bottle_cap.jpg"
 
   # Ultralytics Prediction Arguments
   model_args:
     conf: 0.25         # Confidence threshold
     iou: 0.45          # NMS IoU threshold
-    device: "cpu"      # "cpu" or "0"
+    device: "cpu"      # "cpu" or "0". Use "0" for tensorrt
     imgsz: 640
     max_det: 300
     save: true         # Save annotated images
