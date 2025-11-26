@@ -38,6 +38,7 @@ wandb:
 
 # Training Hyperparameters
 training:
+  # Refer to https://docs.ultralytics.com/modes/train/ for details
   epochs: 5
   batch: 16
   imgsz: 640
@@ -49,7 +50,6 @@ training:
   lr0: 0.02
   weight_decay: 0.01
   
-  # Augmentation Overrides (from your snippet)
   hsv_h: 0.0            # Hue augmentation
   hsv_s: 0.25           # Saturation augmentation
   hsv_v: 0.0            # Value (Brightness) augmentation
